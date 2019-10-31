@@ -93,44 +93,88 @@ export default ({ config, db }) => {
   });
 
   //post  method
-  api.post("/post", (req, res) => {
-    const { post_name, created_by, threshold } = req.body;
-    var validate = ajv.compile(post_model);
-    var valid = validate(req.body);
-    if (!valid) {
-      console.log(validate.errors);
-      return next({ Errors: validate.errors });
-    }
+  // api.post("/post", (req, res) => {
+  //   const { post_name, created_by, threshold } = req.body;
+  //   var validate = ajv.compile(post_model);
+  //   var valid = validate(req.body);
+  //   if (!valid) {
+  //     console.log(validate.errors);
+  //     return next({ Errors: validate.errors });
+  //   }
 
+  //   const created_time = new Date().getTime();
+  //   console.log(created_time);
+  //   db.query(
+  //     `insert into post values('${uuid}','${post_name}',true,'${threshold}','${created_by}','${created_time}')`,
+  //     (err, response) => {
+  //       if (err) {
+  //         console.log(err.stack);
+  //       } else {
+  //         console.log(response.rows);
+  //         res.json({ status: "successfull", post: response.rows });
+  //       }
+  //     }
+  //   );
+  // });
+
+  api.post("/post", (req, res) => {
+    //take posts from req and insert into posts table
+    const {
+      post_name,
+      created_by,
+      threshold
+    } = req.body;
+    const uuid = require("uuid/v1");
+    console.log(uuid(), "post");
     const created_time = new Date().getTime();
     console.log(created_time);
     db.query(
-      `insert into post values('${uuid}','${post_name}',true,'${threshold}','${created_by}','${created_time}')`,
+      `insert into post values('${uuid()}','${post_name}',true,'${threshold}','${created_by}','${created_time}')`,
       (err, response) => {
         if (err) {
           console.log(err.stack);
         } else {
           console.log(response.rows);
-          res.json({ status: "successfull", post: response.rows });
+          res.json({ status: "successfull", response: response.rows });
         }
       }
     );
   });
 
-  //put method
+  // //put method
+  // api.put("/post", (req, res) => {
+  //   const { uuid, post_name, updated_by, threshold } = req.body;
+  //   var validate = ajv.compile(post_model);
+  //   var valid = validate(req.body);
+  //   if (!valid) {
+  //     console.log(validate.errors);
+  //     return next({ Errors: validate.errors });
+  //   }
+  //   const updated_time = new Date().getTime();
+  //   db.query(
+  //     `UPDATE post set post_name='${post_name}',threshold=${threshold},updated_by='${updated_by}',updated_time='${updated_time}' where uuid='${uuid}'`
+  //   );
+  //   res.json({ version, status: "live", method: "put" });
+  // });
+
   api.put("/post", (req, res) => {
-    const { uuid, post_name, updated_by, threshold } = req.body;
-    var validate = ajv.compile(post_model);
-    var valid = validate(req.body);
-    if (!valid) {
-      console.log(validate.errors);
-      return next({ Errors: validate.errors });
-    }
+    console.log("req", req.params);
+    console.log("body", req.body);
+    //take posts post_id from path and find the id and update
+    const { post_name, updated_by, threshold } = req.body;
     const updated_time = new Date().getTime();
     db.query(
-      `UPDATE post set post_name='${post_name}',threshold=${threshold},updated_by='${updated_by}',updated_time='${updated_time}' where uuid='${uuid}'`
+      `UPDATE post set post_name='${post_name}',threshold=${threshold},updated_by='${updated_by}',updated_time='${updated_time}' where uuid='${req.body.uuid}'`
     );
     res.json({ version, status: "live", method: "put" });
+  });
+
+  //delete method
+  api.delete("/post/:uuid", (req, res) => {
+    console.log("req", req.params);
+
+    db.query(`update post set status=false where uuid='${req.params.uuid}'`);
+    res.json({ version, status: "live", method: "delete" });
   });
 
   //delete method
@@ -145,34 +189,71 @@ export default ({ config, db }) => {
 
   //post method
 
+  // api.post("/question_section", (req, res) => {
+  //   const {
+  //     q_uuid,
+  //     post_id,
+  //     q_name,
+  //     options,
+  //     q_answer,
+  //     has_option,
+  //     q_comment,
+  //     created_by,
+  //     timer
+  //   } = req.body;
+  //   var validate = ajv.compile(question_model);
+  //   var valid = validate(req.body);
+  //   if (!valid) {
+  //     console.log(validate.errors);
+  //     return next({ Errors: validate.errors });
+  //   }
+
+  //   const created_time = new Date().getTime();
+
+  //   db.query(
+  //     `insert into question_section values('${q_uuid}','${post_id}','${q_name}','${options}','${q_answer}',${has_option},'${q_comment}',true,'${created_by}','${created_time}', null, null, '${timer}')`,
+  //     (err, response) => {
+  //       if (err) {
+  //         console.log(err.stack);
+  //       } else {
+  //         res.json({ status: "Question Inserted", response: response.rows });
+  //       }
+  //     }
+  //   );
+  // });
+
   api.post("/question_section", (req, res) => {
+    //take posts from req and insert into posts table
     const {
-      q_uuid,
       post_id,
       q_name,
       options,
       q_answer,
       has_option,
       q_comment,
+      status,
       created_by,
+      updated_by,
+      updated_time,
       timer
     } = req.body;
-    var validate = ajv.compile(question_model);
-    var valid = validate(req.body);
-    if (!valid) {
-      console.log(validate.errors);
-      return next({ Errors: validate.errors });
-    }
-
+    console.log(req.body, "Body");
+    const q_uuid = require("uuid/v1");
+    //console.log(q_uuid(), "post");
     const created_time = new Date().getTime();
-
+    console.log(created_time);
+    // console.log(options, "sjkgcy");
+    // const options='{-128 to 126,-128 to 127,-132 to 121,-121 to 111}';
+    // const answer="egewg";
+    //   console.log(answer);
     db.query(
-      `insert into question_section values('${q_uuid}','${post_id}','${q_name}','${options}','${q_answer}',${has_option},'${q_comment}',true,'${created_by}','${created_time}', null, null, '${timer}')`,
+      `insert into question_section values('${q_uuid()}','${post_id}','${q_name}','${options}','${q_answer}',${has_option},'${q_comment}',true,'${created_by}','${created_time}', null, null, '${timer}')`,
       (err, response) => {
         if (err) {
           console.log(err.stack);
         } else {
-          res.json({ status: "Question Inserted", response: response.rows });
+          console.log(response.rows);
+          res.json({ status: "successfull", response: response.rows });
         }
       }
     );
@@ -223,7 +304,34 @@ export default ({ config, db }) => {
   });
 
   //put method for given q_uuid
+  // api.put("/question_section", (req, res) => {
+  //   const {
+  //     q_uuid,
+  //     post_id,
+  //     q_name,
+  //     options,
+  //     q_answer,
+  //     has_option,
+  //     q_comment,
+  //     updated_by,
+  //     timer
+  //   } = req.body;
+  //   var validate = ajv.compile(question_model);
+  //   var valid = validate(req.body);
+  //   if (!valid) {
+  //     console.log(validate.errors);
+  //     return next({ Errors: validate.errors });
+  //   }
+  //   const updated_time = new Date().getTime();
+  //   db.query(
+  //     `UPDATE question_section set post_id='${post_id}',q_name='${q_name}',options='${options}',q_answer='${q_answer}',has_option='${has_option}',q_comment='${q_comment}',updated_by='${updated_by}',updated_time='${updated_time}',timer=${timer} where q_uuid='${q_uuid}'`
+  //   );
+  //   res.json("Question Updated");
+  // });
   api.put("/question_section", (req, res) => {
+    console.log("req", req.params);
+    console.log("body", req.body);
+    //take posts post_id from path and find the id and update
     const {
       q_uuid,
       post_id,
@@ -235,12 +343,7 @@ export default ({ config, db }) => {
       updated_by,
       timer
     } = req.body;
-    var validate = ajv.compile(question_model);
-    var valid = validate(req.body);
-    if (!valid) {
-      console.log(validate.errors);
-      return next({ Errors: validate.errors });
-    }
+
     const updated_time = new Date().getTime();
     db.query(
       `UPDATE question_section set post_id='${post_id}',q_name='${q_name}',options='${options}',q_answer='${q_answer}',has_option='${has_option}',q_comment='${q_comment}',updated_by='${updated_by}',updated_time='${updated_time}',timer=${timer} where q_uuid='${q_uuid}'`
@@ -473,7 +576,7 @@ export default ({ config, db }) => {
 
   let length = 0; //global variable
 
-  const percentage = function(post_id) {
+  const percentage = function (post_id) {
     db.query(
       `SELECT COUNT(q_name)
   FROM question_section where post_id='${post_id}' and status=true`,
@@ -493,7 +596,7 @@ export default ({ config, db }) => {
   //method for calculating user marks, percentage and pass|| fail
   var response_user_id;
   api.post("/candidate_answer", (req, res) => {
-    const insertion = function(candidate_answer) {
+    const insertion = function (candidate_answer) {
       console.log("insertion");
       const c_uuid = require("uuid/v1");
       var { answerList, user_id } = req.body;
@@ -542,7 +645,7 @@ export default ({ config, db }) => {
     // result_insert();
   });
 
-  const candidate_answer = function(userid) {
+  const candidate_answer = function (userid) {
     db.query(
       `SELECT uuid, threshold, post_id,q_uuid,q_answer,q_comment,user_id,question_id,c_answer,c_comment from post p inner join question_section q on p.uuid=q.post_id inner join candidate_answer c on q.q_uuid=c.question_id where user_id='${userid}' `,
       (err, response) => {
@@ -577,11 +680,11 @@ export default ({ config, db }) => {
     );
   };
 
-  const result_insert = function(obj) {
+  const result_insert = function (obj) {
     const uuid = require("uuid/v1");
     db.query(
       `insert into result values('${obj.marks}','${obj.percentage}','${
-        obj.user
+      obj.user
       }','${uuid()}','${obj.result}')`,
       (err, response) => {
         if (err) {
